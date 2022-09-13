@@ -16,6 +16,20 @@ public class Runner {
         }
     }
 
+    public void establishChannels(){
+        for(int i=0;i<Global.NUMBER_OF_NODES;i++){
+            node_list.get(i).establishChannel();
+        }
+    }
+
+    public void runNodes(){
+        for(int i=0;i<Global.NUMBER_OF_NODES;i++){
+            new Thread(node_list.get(i)).start();
+        }
+        node_list.get(0).activate();
+        //node_list.get(1).activate();
+    }
+
     public void readConfigFile(String filename){
         try{
             File config = new File(filename);
@@ -55,8 +69,8 @@ public class Runner {
                         }
                     }
                 }
-                scanner.close();
             }
+            scanner.close();
         }catch(Exception e){
             System.out.println("Something went wrong when reading config file");
             e.printStackTrace();
@@ -68,6 +82,8 @@ public class Runner {
         Runner runner = new Runner();
         runner.readConfigFile("config.txt");
         runner.printNodes();
+        runner.establishChannels();
+        runner.runNodes();
     }
 
 }

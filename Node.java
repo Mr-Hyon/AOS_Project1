@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.*;
 
 public class Node implements Runnable{
 
@@ -9,43 +10,56 @@ public class Node implements Runnable{
     private String host;
     private int port;
     private ArrayList<Node> neighbor_list;
-    private boolean isActive;
-    private int msg_sent;
+    public HashMap<Node, Socket> channels;
+    public volatile boolean isActive; // make this volatile, so it will be updated among all threads
+    public volatile int msg_sent;
+    public ServerSocket serverSocket;
 
     public Node(int id, String host, int port){
         this.id = id;
         this.host = host;
         this.port = port;
+        this.channels = new HashMap<>();
         neighbor_list = new ArrayList<>();
         isActive = false;
         msg_sent = 0;
-    }
-
-    public void runClientThread(){
-        while(true){
-            if(isActive){
-
-            }
+        try{
+            serverSocket = new ServerSocket(port);
+        }catch(IOException e){
+            System.out.println("fail to establish server socket");
         }
     }
 
-    public void runServerThread() throws IOException{
-        ServerSocket ss = new ServerSocket(port);
-        while(true){
-            Socket client = ss.accept();
+    public void establishChannel(){
+        try{
+            for(Node neighbor: neighbor_list){
+                channels.put(neighbor, new Socket(neighbor.getHost(),neighbor.getPort()));
+            }
+        }catch(IOException e){
+            System.out.println("fail to establish channel");
+        }
+    }
+
+    public void listen() throws IOException{
+        int neighbor_listened = 0;
+        while(neighbor_listened<neighbor_list.size()){
+            Socket client = serverSocket.accept();
+            //System.out.println("Node "+id+" Connection detected");
             ServerThread thread = new ServerThread(this, client);
             new Thread(thread).start();
+            neighbor_listened++;
         }
     }
 
     public void run(){
-
-        //System.out.println("Node "+node.getID()+" client thread start running");
-        //while(true){
-        //    if(node.isActive()){
-        //        int random_number_msg = (int)Math.floor(Math.random(Global.max_per_active-Global.min_per_active)*(Global.min_per_active));
-        //    }
-        //}
+        ClientThread thread = new ClientThread(this);
+        new Thread(thread).start();
+        try {
+            listen();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public boolean isActive(){
