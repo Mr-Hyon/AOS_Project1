@@ -5,10 +5,10 @@ import java.io.*;
 public class ServerThread implements Runnable {
 
     private Socket client;
-    private Node server_node;
+    private MAP_Protocal map_protocal;
     
-    public ServerThread(Node server_node,Socket client){
-        this.server_node = server_node;
+    public ServerThread(MAP_Protocal map_protocal,Socket client){
+        this.map_protocal = map_protocal;
         this.client = client;
     }
 
@@ -18,12 +18,12 @@ public class ServerThread implements Runnable {
         try{
             ObjectInputStream in = new ObjectInputStream(client.getInputStream());
             Message msg = (Message)in.readObject();
-            System.out.println("Node "+server_node.getID()+" received message "+msg.getContent()+" from node "+msg.getSourceId()+"");
-            if(!server_node.isActive() && server_node.msg_sent<Global.max_number){
-                System.out.println("Wake up!");
-                //synchronized(server_node){
-                    server_node.isActive=true;
-                //}
+            synchronized(map_protocal){
+                System.out.println("Node "+map_protocal.node_id+" received message "+msg.getContent()+" from node "+msg.getSourceId()+"");
+                if(!map_protocal.active && map_protocal.msg_sent<map_protocal.max_number){
+                    System.out.println("Node is now active");
+                    map_protocal.active=true;      
+                }
             }
 
         }catch(Exception e){
