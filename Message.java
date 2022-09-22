@@ -4,10 +4,14 @@ public class Message implements Serializable{
 
     private String content; // content of message
     private int source_id;  // id of sender node
-
-    public Message(int source_id, String content){
+    private int [] timestamp;
+    public Message(int source_id, String content, int [] timestamp){
         this.content = content;
         this.source_id = source_id;
+        this.timestamp = new int[timestamp.length];
+        for(int i =0;i<timestamp.length;i++){
+            this.timestamp[i] = timestamp[i];
+        }
     }
 
     public String getContent(){
@@ -16,6 +20,9 @@ public class Message implements Serializable{
 
     public int getSourceId(){
         return source_id;
+    }
+    public int [] getTimeStamp(){
+        return timestamp;
     }
 
 }

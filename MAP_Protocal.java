@@ -15,6 +15,8 @@ public class MAP_Protocal {
     int max_number;
     boolean active;
     int msg_sent;
+    int msg_receive;
+    int [] timestamp;
     ServerSocket serverSocket;
     HashMap<Integer, Node> node_list = new HashMap<>();
     HashMap<Node, ArrayList<Node>> neighbor_list = new HashMap<>();
@@ -25,6 +27,8 @@ public class MAP_Protocal {
         active = false;
         msg_sent = 0;
         readConfig(config_filename);
+        timestamp = new int[NUMBER_OF_NODES];
+        
     }
 
     public void launchServer() throws IOException{
@@ -51,7 +55,6 @@ public class MAP_Protocal {
         Client client = new Client(this);
         new Thread(client).start();
     }
-
 
     private void readConfig(String config_filename){
         try{

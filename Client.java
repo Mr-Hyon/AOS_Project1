@@ -13,6 +13,8 @@ public class Client implements Runnable {
 
     public void sendMessage(Message msg, Node target) throws IOException{
         Socket client = map_Protocal.channels.get(target);
+        map_Protocal.msg_sent+=1;
+        map_Protocal.timestamp[map_Protocal.node_id]+=1;  
         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
         out.writeObject(msg);
         out.flush();
@@ -32,7 +34,7 @@ public class Client implements Runnable {
                     synchronized(map_Protocal){
                         ArrayList<Node> neighbor_list = map_Protocal.neighbor_list.get(map_Protocal.node_list.get(map_Protocal.node_id));
                         Node target = neighbor_list.get(new Random().nextInt(neighbor_list.size()));
-                        Message msg = new Message(map_Protocal.node_id, "Hello");
+                        Message msg = new Message(map_Protocal.node_id, "Hello", map_Protocal.timestamp);
                         try {
                             sendMessage(msg, target);
                             System.out.println(map_Protocal.node_id+" sending message to node "+target.getID());

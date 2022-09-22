@@ -9,6 +9,11 @@ public class Main {
         protocal.launchClient();
         if(protocal.node_id==0)
             protocal.active = true;
+
+        // for(int time : protocal.timestamp){
+        //     System.out.println(time);
+        // }
+        
     }
 
 }
