@@ -17,6 +17,9 @@ public class MAP_Protocal {
     int msg_sent;
     int msg_receive;
     int [] timestamp;
+    boolean marker_mode; // this indicates whether node receives marker mode
+    int marker_count;   // this indicates how many marker messages are received during one session
+    ArrayList<int[]> saved_states = new ArrayList<>();
     ServerSocket serverSocket;
     HashMap<Integer, Node> node_list = new HashMap<>();
     HashMap<Node, ArrayList<Node>> neighbor_list = new HashMap<>();
@@ -25,6 +28,8 @@ public class MAP_Protocal {
     public MAP_Protocal(int node_id, String config_filename){
         this.node_id = node_id;
         active = false;
+        marker_mode = false;
+        marker_count = 0;
         msg_sent = 0;
         readConfig(config_filename);
         timestamp = new int[NUMBER_OF_NODES];
@@ -52,6 +57,8 @@ public class MAP_Protocal {
             }
         }
         System.out.println("All neighbors connected!");
+        Snapshot CL_snapshot = new Snapshot(this);
+        new Thread(CL_snapshot).start();
         Client client = new Client(this);
         new Thread(client).start();
     }

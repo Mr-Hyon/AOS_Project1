@@ -1,4 +1,4 @@
-# AOS_Project1 Part 1
+# AOS_Project1
 
 ## Group Members:  
 Yisheng Zhang(yxz200005), Yifan Lin(yxl200063)

@@ -18,19 +18,29 @@ public class ServerThread implements Runnable {
         try{
             ObjectInputStream in = new ObjectInputStream(client.getInputStream());
             Message msg = (Message)in.readObject();
-            synchronized(map_protocal){
-                System.out.println("Node "+map_protocal.node_id+" received message "+msg.getContent()+" from node "+msg.getSourceId()+"");
-                if(!map_protocal.active && map_protocal.msg_sent<map_protocal.max_number){
-                    map_protocal.msg_receive+=1;
-                    int num_nodes = map_protocal.NUMBER_OF_NODES;
-                    for(int i =0;i<num_nodes;i++){
-                        if(msg.getTimeStamp()[i]>map_protocal.timestamp[i]){
-                            map_protocal.timestamp[i]=msg.getTimeStamp()[i];
+            if(msg.getContent().equals("marker")){
+                // this is a marker message
+                synchronized(map_protocal){
+                    map_protocal.marker_mode = true;
+                    map_protocal.marker_count++;
+                }
+            }
+            else{
+                // this is a application message
+                synchronized(map_protocal){
+                    System.out.println("Node "+map_protocal.node_id+" received message "+msg.getContent()+" from node "+msg.getSourceId()+"");
+                    if(!map_protocal.active && map_protocal.msg_sent<map_protocal.max_number){
+                        map_protocal.msg_receive+=1;
+                        int num_nodes = map_protocal.NUMBER_OF_NODES;
+                        for(int i =0;i<num_nodes;i++){
+                            if(msg.getTimeStamp()[i]>map_protocal.timestamp[i]){
+                                map_protocal.timestamp[i]=msg.getTimeStamp()[i];
+                            }
                         }
-                    }
 
-                    System.out.println("Node is now active");
-                    map_protocal.active=true;      
+                        System.out.println("Node is now active");
+                        map_protocal.active=true;      
+                    }
                 }
             }
 

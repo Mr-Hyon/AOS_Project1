@@ -8,9 +8,11 @@ public class Message implements Serializable{
     public Message(int source_id, String content, int [] timestamp){
         this.content = content;
         this.source_id = source_id;
-        this.timestamp = new int[timestamp.length];
-        for(int i =0;i<timestamp.length;i++){
-            this.timestamp[i] = timestamp[i];
+        if(timestamp != null){
+            this.timestamp = new int[timestamp.length];
+            for(int i =0;i<timestamp.length;i++){
+                this.timestamp[i] = timestamp[i];
+            }
         }
     }
 
