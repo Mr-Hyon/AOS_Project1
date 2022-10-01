@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.File;
 
 public class Snapshot implements Runnable{
 
@@ -15,7 +16,7 @@ public class Snapshot implements Runnable{
 
     @Override
     public void run(){
-        while(true){
+        while(!terminated){
             if(id==0){
                 synchronized(map_Protocal){
                     map_Protocal.marker_mode = true;
@@ -40,7 +41,7 @@ public class Snapshot implements Runnable{
 
                 }
                 if(id==0){
-                    Thread.sleep(map_Protocal.min_send_delay);
+                    Thread.sleep(map_Protocal.snapshot_delay);
                 }
             }
         }
@@ -55,6 +56,7 @@ public class Snapshot implements Runnable{
                 copied_arr[i] = timestamp[i];
             }
             map_Protocal.saved_states.add(copied_arr);
+            write_output(copied_arr);
 
             // send marker messages to all neighbors
             for(Node node: map_Protocal.neighbor_list.get(current_node)){
@@ -67,8 +69,33 @@ public class Snapshot implements Runnable{
         }
     }
 
-    public void write_output(){
-        
+    public void write_output(int[] arr){
+        // recording local state (timestamp) and write it to output file
+        String output_content = "";
+        for(int i=0;i<arr.length;i++){
+            if(i!=0)
+                output_content += " "
+            output_content+=arr[i];
+        }
+        String output_file = "config-"+id+".out";
+        // check if file exists
+        if(!outout_file.exists()){
+            // create the file if file not exists
+            try{
+                File output = new File(output_file);
+                output.createNewFile();
+            }catch(IOException e){
+                System.out.println("An error occurred when creating output file.");
+            } 
+        }
+        // output the timestamp
+        try{
+            output = new BufferedWriter(new FileWriter(output_file,true));
+            output.append(output_content);
+            output.close();
+        }catch(IOException e){
+            System.out.println("An error occurred when writing output.");
+        }
     }
 
     public void checkTermination(){
