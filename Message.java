@@ -8,8 +8,8 @@ public class Message implements Serializable{
     
     // variables for status message
     boolean isActive;
-    int sent_number;
-    int received_number;
+    int sent_count;
+    int received_count;
 
     public Message(int source_id, String content, int [] timestamp){
         this.content = content;
@@ -17,7 +17,10 @@ public class Message implements Serializable{
         if(timestamp != null){
             this.timestamp = new int[timestamp.length];
             for(int i =0;i<timestamp.length;i++){
-                this.timestamp[i] = timestamp[i];
+                if(i==source_id)
+                    this.timestamp[i] = timestamp[i]+1;
+                else
+                    this.timestamp[i] = timestamp[i];
             }
         }
     }

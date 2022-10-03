@@ -24,6 +24,7 @@ public class MAP_Protocal {
     HashMap<Integer, Node> node_list = new HashMap<>();
     HashMap<Node, ArrayList<Node>> neighbor_list = new HashMap<>();
     HashMap<Node, Socket> channels = new HashMap<>();
+    HashMap<Integer,Message> status_messages = new HashMap<>(); // only node 0 use this
 
     public MAP_Protocal(int node_id, String config_filename){
         this.node_id = node_id;
@@ -33,7 +34,8 @@ public class MAP_Protocal {
         msg_sent = 0;
         readConfig(config_filename);
         timestamp = new int[NUMBER_OF_NODES];
-        
+        if(node_id!=0)
+            ConvergeCast.getParentId(this);
     }
 
     public void launchServer() throws IOException{
@@ -58,9 +60,10 @@ public class MAP_Protocal {
         }
         System.out.println("All neighbors connected!");
         Snapshot CL_snapshot = new Snapshot(this);
-        new Thread(CL_snapshot).start();
         Client client = new Client(this);
+        if(node_id==0) active = true;
         new Thread(client).start();
+        new Thread(CL_snapshot).start();
     }
 
     private void readConfig(String config_filename){

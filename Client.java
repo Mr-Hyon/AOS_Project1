@@ -37,11 +37,10 @@ public class Client implements Runnable {
                         Message msg = new Message(map_Protocal.node_id, "Hello", map_Protocal.timestamp);
                         try {
                             sendMessage(msg, target);
-                            System.out.println(map_Protocal.node_id+" sending message to node "+target.getID());
+                            //System.out.println(map_Protocal.node_id+" sending message to node "+target.getID());
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
-                        map_Protocal.msg_sent++;
                     }
                         try {
                             Thread.sleep(map_Protocal.min_send_delay);

@@ -1,5 +1,7 @@
-import java.io.IOException;
-import java.io.File;
+import java.io.*;
+import java.util.*;
+import java.net.Socket;
+import java.lang.*;
 
 public class Snapshot implements Runnable{
 
@@ -27,23 +29,57 @@ public class Snapshot implements Runnable{
                 isMarkerMode = map_Protocal.marker_mode;
             }
             if(isMarkerMode){
-                sendMarkerMessage();
+                try{
+                    sendMarkerMessage();
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
                 int marker_count = 0;
                 // wait until receives marker messages from all neighbors
                 while(marker_count<map_Protocal.neighbor_list.get(current_node).size()){
                     marker_count = map_Protocal.marker_count;
                 }
+                if(id!=0)
+                    try{
+                        sendStatusMessage();
+                    }catch(IOException e){
+                        e.printStackTrace();
+                    }
                 synchronized(map_Protocal){
                     // this snapshot has ended
                     map_Protocal.marker_count = 0;
                     map_Protocal.marker_mode = false;
-                    // converge cast to inform status to parents
-
                 }
                 if(id==0){
-                    Thread.sleep(map_Protocal.snapshot_delay);
+                    System.out.println("Waiting for all status message to arrive");
+                    int size = 0;
+                    while(size<map_Protocal.NUMBER_OF_NODES-1){
+                        // keep waiting for all status message to arrive
+                        synchronized(map_Protocal){
+                            size = map_Protocal.status_messages.size();
+                        }
+                    }
+                    checkTermination();
+                    synchronized(map_Protocal){
+                        map_Protocal.status_messages = new HashMap<>();
+                    }
+                    try{
+                        Thread.sleep(map_Protocal.snapshot_delay);
+                    }catch(InterruptedException e){
+                        e.printStackTrace();
+                    }
                 }
             }
+        }
+    }
+
+    public void sendStatusMessage() throws IOException{
+        synchronized(map_Protocal){
+            Message statusMsg = new Message(id,"status",map_Protocal.active,map_Protocal.msg_sent,map_Protocal.msg_receive);
+            Socket client = map_Protocal.channels.get(map_Protocal.node_list.get(ConvergeCast.parentId));
+            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+            out.writeObject(statusMsg);
+            out.flush();
         }
     }
 
@@ -63,7 +99,7 @@ public class Snapshot implements Runnable{
                 Message markerMessage = new Message(id,"marker",null);
                 Socket client = map_Protocal.channels.get(node);
                 ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-                out.writeObject(msg);
+                out.writeObject(markerMessage);
                 out.flush();
             }
         }
@@ -74,24 +110,25 @@ public class Snapshot implements Runnable{
         String output_content = "";
         for(int i=0;i<arr.length;i++){
             if(i!=0)
-                output_content += " "
-            output_content+=arr[i];
+                output_content += " ";
+            output_content += arr[i];
         }
-        String output_file = "config-"+id+".out";
+        String file_name = "config-"+id+".out";
+        File output_file = new File("config-"+id+".out");
         // check if file exists
-        if(!outout_file.exists()){
+        if(!output_file.exists()){
             // create the file if file not exists
             try{
-                File output = new File(output_file);
-                output.createNewFile();
+                output_file.createNewFile();
             }catch(IOException e){
                 System.out.println("An error occurred when creating output file.");
             } 
         }
         // output the timestamp
         try{
-            output = new BufferedWriter(new FileWriter(output_file,true));
+            BufferedWriter output = new BufferedWriter(new FileWriter(file_name,true));
             output.append(output_content);
+            output.newLine();
             output.close();
         }catch(IOException e){
             System.out.println("An error occurred when writing output.");
@@ -99,7 +136,34 @@ public class Snapshot implements Runnable{
     }
 
     public void checkTermination(){
-
+        System.out.println("Checking termination status");
+        synchronized(map_Protocal){
+            int total_send = 0;
+            int total_receive = 0;
+            total_send += map_Protocal.msg_sent;
+            total_receive += map_Protocal.msg_receive;
+            for(int i=1;i<=map_Protocal.NUMBER_OF_NODES-1;i++){
+                Message msg = map_Protocal.status_messages.get(i);
+                if(map_Protocal.active || msg.isActive){
+                    System.out.println("---------------------------");
+                    System.out.println("Some node is still active!");
+                    System.out.println("---------------------------");
+                    return;
+                }
+                total_send += msg.sent_count;
+                total_receive += msg.received_count;
+            }
+            if(total_receive != total_send){
+                System.out.println("---------------------------");
+                System.out.println("Channels not empty!");
+                System.out.println("send:"+total_send);
+                System.out.println("receive:"+total_receive);
+                System.out.println("---------------------------");
+                return;
+            }
+            terminated = true;
+            System.out.println("System is terminated!");
+        }
     }
 
 }

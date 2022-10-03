@@ -1,7 +1,7 @@
 # s i x g l o b a l p a r ame te r s ( s e e above )
 5 6 10 1000 2000 15
-0 dc40 1234 # nodeID hostName l i s t e n P o r t
-1 dc41 1233
+0 dc27 1234 # nodeID hostName l i s t e n P o r t
+1 dc30 1233
 2 dc38 1233
 3 dc43 1232
 4 dc44 1233
