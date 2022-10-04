@@ -11,6 +11,9 @@ public class Message implements Serializable{
     int sent_count;
     int received_count;
 
+    // construct method for application message, marker message
+    // application message must have timestamp
+    // marker message should have timestamp as null
     public Message(int source_id, String content, int [] timestamp){
         this.content = content;
         this.source_id = source_id;
@@ -25,6 +28,7 @@ public class Message implements Serializable{
         }
     }
 
+    // construction method only for status message
     public Message(int source_id, String content, boolean status, int sent_count, int received_count){
         this.content = content;
         this.source_id = source_id;

@@ -16,9 +16,12 @@ public class MAP_Protocal {
     boolean active;
     int msg_sent;
     int msg_receive;
+    String config_file = "";
     int [] timestamp;
     boolean marker_mode; // this indicates whether node receives marker mode
     int marker_count;   // this indicates how many marker messages are received during one session
+    boolean terminated; // indicator of whether protocal has terminated
+    int halt_count = 0; // indicator of how many halt messages received. If equals to neighbor number, server thread will stop
     ArrayList<int[]> saved_states = new ArrayList<>();
     ServerSocket serverSocket;
     HashMap<Integer, Node> node_list = new HashMap<>();
@@ -30,8 +33,10 @@ public class MAP_Protocal {
         this.node_id = node_id;
         active = false;
         marker_mode = false;
+        terminated = false;
         marker_count = 0;
         msg_sent = 0;
+        config_file = config_filename.split(".txt")[0];
         readConfig(config_filename);
         timestamp = new int[NUMBER_OF_NODES];
         if(node_id!=0)

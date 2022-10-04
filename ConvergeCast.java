@@ -7,7 +7,7 @@ public class ConvergeCast {
     public static void getParentId(MAP_Protocal map){
         int my_id = map.node_id;
         if(my_id==0){
-            // node 0 does not need to send state messsage
+            // node 0 does not need to send status messsage
             parentId = 0;
             return;
         }

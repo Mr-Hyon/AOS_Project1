@@ -52,6 +52,30 @@ public class ServerThread implements Runnable {
                     }
                 }
             }
+            else if(msg.getContent().equals("halt")){
+                System.out.println("Received halt message");
+                synchronized(map_protocal){
+                    map_protocal.halt_count++;
+                    if(!map_protocal.terminated){
+                        map_protocal.terminated = true;
+                        // first time receives halt message, send halt messages to all neighbors
+                        for(Node node: map_protocal.neighbor_list.get(map_protocal.node_list.get(map_protocal.node_id))){
+                            Message haltMessage = new Message(map_protocal.node_id,"halt",null);
+                            Socket client = map_protocal.channels.get(node);
+                            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+                            out.writeObject(haltMessage);
+                            out.flush();
+                        }
+                    }
+                    if(map_protocal.halt_count == map_protocal.neighbor_list.get(map_protocal.node_list.get(map_protocal.node_id)).size()){
+                        // received all halt message from neighbors
+                        System.out.println("--------------------------");
+                        System.out.println("Server Thread Halted");
+                        System.out.println("--------------------------");
+                        break;
+                    }
+                }
+            }
             else{
                 // this is a application message
                 synchronized(map_protocal){
@@ -62,7 +86,7 @@ public class ServerThread implements Runnable {
                             map_protocal.timestamp[i]=msg.getTimeStamp()[i];
                         }
                     }
-                    //System.out.println("Node "+map_protocal.node_id+" received message "+msg.getContent()+" from node "+msg.getSourceId()+"");
+                    System.out.println(map_protocal.node_id+" received application message "+msg.getContent()+" from "+msg.getSourceId()+"");
                     if(!map_protocal.active && map_protocal.msg_sent<map_protocal.max_number){
                         System.out.println("Node is now active");
                         map_protocal.active=true;      

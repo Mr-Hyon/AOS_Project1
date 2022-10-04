@@ -6,7 +6,6 @@ public class Main {
         //args[0] is node_id, args[1] is path to config file
         MAP_Protocal protocal = new MAP_Protocal(Integer.parseInt(args[0]), args[1]);
         protocal.launchServer();
-        Thread.sleep(1000);
         protocal.launchClient();
         // for(int time : protocal.timestamp){
         //     System.out.println(time);

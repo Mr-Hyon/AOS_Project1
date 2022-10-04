@@ -9,9 +9,11 @@ public class Snapshot implements Runnable{
     int id;
     Node current_node;
     boolean terminated = false;
+    String config_file;
 
     public Snapshot(MAP_Protocal map_Protocal){
         this.map_Protocal = map_Protocal;
+        config_file = map_Protocal.config_file;
         id = map_Protocal.node_id;
         current_node = map_Protocal.node_list.get(id);
     }
@@ -70,6 +72,16 @@ public class Snapshot implements Runnable{
                     }
                 }
             }
+            synchronized(map_Protocal){
+                terminated = map_Protocal.terminated;
+            }
+        }
+        if(id==0){
+            try{
+                sendHaltMessage();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -80,6 +92,19 @@ public class Snapshot implements Runnable{
             ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
             out.writeObject(statusMsg);
             out.flush();
+        }
+    }
+
+    public void sendHaltMessage() throws IOException{
+        synchronized(map_Protocal){
+            // send halt messages to all neighbors
+            for(Node node: map_Protocal.neighbor_list.get(current_node)){
+                Message haltMessage = new Message(id,"halt",null);
+                Socket client = map_Protocal.channels.get(node);
+                ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+                out.writeObject(haltMessage);
+                out.flush();
+            }
         }
     }
 
@@ -113,8 +138,8 @@ public class Snapshot implements Runnable{
                 output_content += " ";
             output_content += arr[i];
         }
-        String file_name = "config-"+id+".out";
-        File output_file = new File("config-"+id+".out");
+        String file_name = config_file+"-"+id+".out";
+        File output_file = new File(file_name);
         // check if file exists
         if(!output_file.exists()){
             // create the file if file not exists
@@ -161,8 +186,10 @@ public class Snapshot implements Runnable{
                 System.out.println("---------------------------");
                 return;
             }
-            terminated = true;
+            map_Protocal.terminated = true;
+            System.out.println("---------------------------");
             System.out.println("System is terminated!");
+            System.out.println("---------------------------");
         }
     }
 
