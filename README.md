@@ -1,7 +1,7 @@
 # AOS_Project1
 
 ## Group Members:  
-Yisheng Zhang(yxz200005), Yifan Lin(yxl200063)
+Yisheng Zhang, Yifan Lin
 
 ## How to Compile
 
